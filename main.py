@@ -12,7 +12,7 @@ async def stream_chat(host, port):
         if not line:
             print("No line")
             break
-        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
+        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         line = f"[{timestamp}] {line.decode().rstrip()}\n"
         print(line, end="")
         async with aiofiles.open("chat.txt", mode="a") as log_file:
