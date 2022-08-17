@@ -1,10 +1,12 @@
 import asyncio
+from argparse import ArgumentParser
 from datetime import datetime
+from pathlib import Path
 
 import aiofiles
 
 
-async def stream_chat(host, port):
+async def stream_chat(host, port, log_fullpath):
     reader, writer = await asyncio.open_connection(host, port)
 
     while True:
@@ -15,12 +17,19 @@ async def stream_chat(host, port):
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         line = f"[{timestamp}] {line.decode().rstrip()}\n"
         print(line, end="")
-        async with aiofiles.open("chat.txt", mode="a") as log_file:
+        async with aiofiles.open(log_fullpath, mode="a+") as log_file:
             await log_file.writelines(line)
 
 
 def main():
-    asyncio.run(stream_chat("minechat.dvmn.org", 5000))
+    parser = ArgumentParser()
+    parser.add_argument("-H", "--host", type=str, required=True, help="Remote host address to connect to")
+    parser.add_argument("-P", "--port", type=int, required=True, help="Remote port to connect to")
+    parser.add_argument("-l", "--log", type=str, default="chat.history", help="Path to chat log to append to")
+    args = parser.parse_args()
+    log_fullpath = Path(args.log)
+    log_fullpath.parent.mkdir(parents=True, exist_ok=True)
+    asyncio.run(stream_chat(args.host, args.port, log_fullpath))
 
 
 if __name__ == "__main__":
