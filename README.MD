@@ -7,9 +7,11 @@ This repository contains client scripts to read from and write to minechat.dvmn.
 You must have Python3 installed on your system.
 
 You may use `pip` (or `pip3` to avoid conflict with Python2) to install dependencies.
-```
+
+```sh
 pip install -r requirements.txt
 ```
+
 It is strongly advised to use [virtualenv/venv](https://docs.python.org/3/library/venv.html) for project isolation.
 
 ## Setup and usage for `chat_reader.py`
@@ -43,7 +45,7 @@ Certain customization is supported. Following parameters can be specified as CLI
 | Command Line Argument | `.writer.env` key | Default value | Description |
 | - | - | - | - |
 |  `-H`, `--host` | `HOST` | `minechat.dvmn.org` | Remote host address to connect to |
-|  `-P`, `--port` | `PORT` | `5000` | Remote host port to connect to |
+|  `-P`, `--port` | `PORT` | `5050` | Remote host port to connect to |
 |  `-f`, `--users-fullpath` | `USERS_FILE` | `./user.json` | Register file containing users credentials |
 
 ## Project goals
