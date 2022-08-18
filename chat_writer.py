@@ -2,11 +2,11 @@ import asyncio
 import json
 import logging
 import uuid
-from argparse import ArgumentParser
 from pathlib import Path
 
 import aiofiles
-
+import configargparse
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__file__)
 
@@ -50,14 +50,14 @@ async def authorize(reader, writer, user_hash):
         logger.debug(f"Logged in as {auth_result['nickname']}")
 
 
-async def send_message(host, port, username, message):
+async def send_message(host, port, users_fullpath, username, message):
     reader, writer = await asyncio.open_connection(host, port)
 
     users = dict()
     user_hash = None
 
-    if Path("users.json").exists():
-        async with aiofiles.open("users.json", "rb") as users_file:
+    if Path(users_fullpath).exists():
+        async with aiofiles.open(users_fullpath, "rb") as users_file:
             try:
                 users = json.loads(await users_file.read())
                 user_hash = users.get(username, None)
@@ -68,7 +68,7 @@ async def send_message(host, port, username, message):
         if user_hash is None:
             user_hash = await register(reader, writer, username)
             users[username] = user_hash
-            async with aiofiles.open("users.json", "wb") as users_file:
+            async with aiofiles.open(users_fullpath, "wb") as users_file:
                 await users_file.write(json.dumps(users).encode())
         else:
             await authorize(reader, writer, user_hash)
@@ -80,19 +80,24 @@ async def send_message(host, port, username, message):
         writer.close()
         await writer.wait_closed()
 
+
 def main():
     logging.basicConfig(level=logging.ERROR)
     logger = logging.getLogger(__file__)
     logger.setLevel(logging.DEBUG)
 
-    parser = ArgumentParser()
-    parser.add_argument("-H", "--host", type=str, required=True, help="Remote host address to connect to")
-    parser.add_argument("-P", "--port", type=int, required=True, help="Remote port to connect to")
-    parser.add_argument("-u", "--user", type=str, required=True, help="Username to acquire user credentials")
-    parser.add_argument("-m", "--message", type=str, required=True, help="Message to broadcast")
+    load_dotenv(".writer.env")
+    parser = configargparse.ArgParser()
+    parser.add("-H", "--host", type=str, default="minechat.dvmn.org", help="Remote host address to connect to", env_var="HOST")
+    parser.add("-P", "--port", type=int, default="5050", help="Remote port to connect to", env_var="PORT")
+    parser.add("-f", "--users-fullpath", type=str, default="users.json", help="Full path to JSON file with users", env_var="USERS_FILE")
+    parser.add("-u", "--user", type=str, required=True, help="Username to acquire user credentials")
+    parser.add("-m", "--message", type=str, required=True, help="Message to broadcast")
     args = parser.parse_args()
     
-    asyncio.run(send_message(args.host, args.port, args.user, args.message))
+    users_fullpath = Path(args.users_fullpath)
+    users_fullpath.parent.mkdir(parents=True, exist_ok=True)
+    asyncio.run(send_message(args.host, args.port, users_fullpath, args.user, args.message))
 
 
 if __name__ == "__main__":

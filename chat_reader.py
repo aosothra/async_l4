@@ -1,9 +1,10 @@
 import asyncio
-from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
 
 import aiofiles
+import configargparse
+from dotenv import load_dotenv
 
 
 async def stream_chat(host, port, log_fullpath):
@@ -24,10 +25,11 @@ async def stream_chat(host, port, log_fullpath):
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument("-H", "--host", type=str, required=True, help="Remote host address to connect to")
-    parser.add_argument("-P", "--port", type=int, required=True, help="Remote port to connect to")
-    parser.add_argument("-l", "--log", type=str, default="chat.history", help="Path to chat log to append to")
+    load_dotenv(".reader.env")
+    parser = configargparse.ArgParser()
+    parser.add("-H", "--host", type=str, default="minechat.dvmn.org", help="Remote host address to connect to", env_var="HOST")
+    parser.add("-P", "--port", type=int, default="5000", help="Remote port to connect to", env_var="PORT")
+    parser.add("-l", "--log", type=str, default="chat.history", help="Path to chat log to append to", env_var="HISTORY_FILE")
     args = parser.parse_args()
     log_fullpath = Path(args.log)
     log_fullpath.parent.mkdir(parents=True, exist_ok=True)
