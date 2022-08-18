@@ -12,13 +12,15 @@ async def stream_chat(host, port, log_fullpath):
     while True:
         line = await reader.readline()
         if not line:
-            print("No line")
             break
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         line = f"[{timestamp}] {line.decode().rstrip()}\n"
         print(line, end="")
         async with aiofiles.open(log_fullpath, mode="a+") as log_file:
             await log_file.writelines(line)
+    
+    writer.close()
+    await writer.wait_closed()
 
 
 def main():
