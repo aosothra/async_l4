@@ -67,7 +67,7 @@ async def broadcast_to_chat(host, port, users_fullpath, username, message):
                 logger.warning("User register is empty.")
     
     try:
-        if user_hash is None:
+        if not user_hash:
             user_hash = await register(reader, writer, username)
             users[username] = user_hash
             async with aiofiles.open(users_fullpath, "wb") as users_file:
