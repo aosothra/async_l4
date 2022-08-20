@@ -11,12 +11,12 @@ async def read_chat_stream(host, port, log_fullpath):
     reader, writer = await asyncio.open_connection(host, port)
 
     try:
-        while True:
-            line = await reader.readline()
-            timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-            line = f"[{timestamp}] {line.decode().rstrip()}\n"
-            print(line, end="")
-            async with aiofiles.open(log_fullpath, mode="a+") as log_file:
+        async with aiofiles.open(log_fullpath, mode="a+") as log_file:
+            while True:
+                line = await reader.readline()
+                timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+                line = f"[{timestamp}] {line.decode().rstrip()}\n"
+                print(line, end="")
                 await log_file.writelines(line)
     finally:
         writer.close()
