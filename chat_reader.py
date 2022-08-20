@@ -7,7 +7,7 @@ import configargparse
 from dotenv import load_dotenv
 
 
-async def stream_chat(host, port, log_fullpath):
+async def read_chat_stream(host, port, log_fullpath):
     reader, writer = await asyncio.open_connection(host, port)
 
     while True:
@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
     log_fullpath = Path(args.log)
     log_fullpath.parent.mkdir(parents=True, exist_ok=True)
-    asyncio.run(stream_chat(args.host, args.port, log_fullpath))
+    asyncio.run(read_chat_stream(args.host, args.port, log_fullpath))
 
 
 if __name__ == "__main__":
