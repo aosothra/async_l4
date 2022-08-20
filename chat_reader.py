@@ -13,8 +13,6 @@ async def read_chat_stream(host, port, log_fullpath):
     try:
         while True:
             line = await reader.readline()
-            if not line:
-                break
             timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
             line = f"[{timestamp}] {line.decode().rstrip()}\n"
             print(line, end="")
