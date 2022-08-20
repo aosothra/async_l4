@@ -10,18 +10,19 @@ from dotenv import load_dotenv
 async def read_chat_stream(host, port, log_fullpath):
     reader, writer = await asyncio.open_connection(host, port)
 
-    while True:
-        line = await reader.readline()
-        if not line:
-            break
-        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        line = f"[{timestamp}] {line.decode().rstrip()}\n"
-        print(line, end="")
-        async with aiofiles.open(log_fullpath, mode="a+") as log_file:
-            await log_file.writelines(line)
-    
-    writer.close()
-    await writer.wait_closed()
+    try:
+        while True:
+            line = await reader.readline()
+            if not line:
+                break
+            timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+            line = f"[{timestamp}] {line.decode().rstrip()}\n"
+            print(line, end="")
+            async with aiofiles.open(log_fullpath, mode="a+") as log_file:
+                await log_file.writelines(line)
+    finally:
+        writer.close()
+        await writer.wait_closed()
 
 
 def main():
