@@ -20,13 +20,13 @@ async def register(reader, writer, username):
     signin_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {signin_message}")
     skip_auth_reply = "\n"
-    await send_message(skip_auth_reply)
+    await send_message(writer, skip_auth_reply)
     logger.debug(f"Reply: {skip_auth_reply.strip()}")
 
     request_username_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {request_username_message}")
     username_reply = f"{username}\n"
-    await send_message(username_reply)
+    await send_message(writer, username_reply)
     logger.debug(f"Reply: {username_reply.strip()}")
 
     signup_result = json.loads((await reader.readline()).decode())
@@ -41,7 +41,7 @@ async def authorize(reader, writer, user_hash):
     signin_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {signin_message}")
     user_hash_reply = f"{user_hash}\n"
-    await send_message(user_hash_reply)
+    await send_message(writer, user_hash_reply)
     logger.debug(f"Reply: {user_hash_reply.strip()}")
 
     auth_result = json.loads((await reader.readline()).decode())
@@ -75,7 +75,7 @@ async def broadcast_to_chat(host, port, users_fullpath, username, message):
         else:
             await authorize(reader, writer, user_hash)
 
-        await send_message(f"{message}\n\n")
+        await send_message(writer, f"{message}\n\n")
         logger.debug(f"Broadcast: {message}")
     finally:
         writer.close()
