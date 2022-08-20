@@ -11,19 +11,22 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__file__)
 
 
+async def send_message(writer, message):
+    writer.write(message.encode())
+    await writer.drain()
+
+
 async def register(reader, writer, username):
     signin_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {signin_message}")
     skip_auth_reply = "\n"
-    writer.write(skip_auth_reply.encode())
-    await writer.drain()
+    await send_message(skip_auth_reply)
     logger.debug(f"Reply: {skip_auth_reply.strip()}")
 
     request_username_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {request_username_message}")
     username_reply = f"{username}\n"
-    writer.write(username_reply.encode())
-    await writer.drain()
+    await send_message(username_reply)
     logger.debug(f"Reply: {username_reply.strip()}")
 
     signup_result = json.loads((await reader.readline()).decode())
@@ -38,8 +41,7 @@ async def authorize(reader, writer, user_hash):
     signin_message = (await reader.readline()).decode().strip()
     logger.debug(f"Message: {signin_message}")
     user_hash_reply = f"{user_hash}\n"
-    writer.write(user_hash_reply.encode())
-    await writer.drain()
+    await send_message(user_hash_reply)
     logger.debug(f"Reply: {user_hash_reply.strip()}")
 
     auth_result = json.loads((await reader.readline()).decode())
@@ -50,7 +52,7 @@ async def authorize(reader, writer, user_hash):
         logger.debug(f"Logged in as {auth_result['nickname']}")
 
 
-async def send_message(host, port, users_fullpath, username, message):
+async def broadcast_to_chat(host, port, users_fullpath, username, message):
     reader, writer = await asyncio.open_connection(host, port)
 
     users = dict()
@@ -73,8 +75,7 @@ async def send_message(host, port, users_fullpath, username, message):
         else:
             await authorize(reader, writer, user_hash)
 
-        writer.write(f"{message}\n\n".encode())
-        await writer.drain()
+        await send_message(f"{message}\n\n")
         logger.debug(f"Broadcast: {message}")
     finally:
         writer.close()
@@ -97,7 +98,7 @@ def main():
     
     users_fullpath = Path(args.users_fullpath)
     users_fullpath.parent.mkdir(parents=True, exist_ok=True)
-    asyncio.run(send_message(args.host, args.port, users_fullpath, args.user, args.message))
+    asyncio.run(broadcast_to_chat(args.host, args.port, users_fullpath, args.user, args.message))
 
 
 if __name__ == "__main__":
