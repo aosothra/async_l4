@@ -46,10 +46,10 @@ async def authorize(reader, writer, user_hash):
 
     auth_result = json.loads((await reader.readline()).decode())
     logger.debug(f"Message: {auth_result}")
-    if auth_result is None:
+    if not auth_result:
         raise ValueError("User hash is invalid, check credentials or try to register first")
-    else:
-        logger.debug(f"Logged in as {auth_result['nickname']}")
+    
+    logger.debug(f"Logged in as {auth_result['nickname']}")
 
 
 async def broadcast_to_chat(host, port, users_fullpath, username, message):
